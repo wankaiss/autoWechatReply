@@ -14,9 +14,9 @@
 </head>
 <body>
     <div id="img">
-        <img src="" v-bind:class="{ alignCenter: isActive }">
+        <img src="../auto_reply/QR.png" v-bind:class="{ alignCenter: isActive }">
     </div>
-    <div id="text" v-bind:class="{ alignCenter: isActive }">
+    <div id="text" v-bind:class="{ alignCenter: isActive }" v-bind:style="styleObject">
         {{ message }}
     </div>
 
@@ -31,7 +31,12 @@
         new Vue({
             el: '#text',
             data: {
-                message: 'Please scan the image use your wechat!',
+                styleObject: {
+                    color: 'black',
+                    fontSize: '150%',
+                    fontWeight: '900'
+                },
+                message: 'Please scan the image use your Wechat!',
                 isActive: true
             }
         })
