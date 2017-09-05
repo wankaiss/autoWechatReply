@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:v-bind="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>QRCode</title>
+    <script src="js/node_modules/vue/dist/vue.min.js"></script>
+    <style>
+        .alignCenter{
+            display: block;
+            text-align: center;
+            margin: auto;
+        }
+    </style>
+</head>
+<body>
+    <div id="img">
+        <img src="" v-bind:class="{ alignCenter: isActive }">
+    </div>
+    <div id="text" v-bind:class="{ alignCenter: isActive }">
+        {{ message }}
+    </div>
+
+    <script>
+        new Vue({
+            el: '#img',
+            data: {
+                isActive: true
+            }
+        })
+
+        new Vue({
+            el: '#text',
+            data: {
+                message: 'Please scan the image use your wechat!',
+                isActive: true
+            }
+        })
+    </script>
+</body>
+</html>
