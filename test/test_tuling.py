@@ -6,6 +6,7 @@ import Queue
 from src.tuling import Tuling
 import responses
 
+
 @responses.activate
 def test_Tuling():
     """test Tuling server

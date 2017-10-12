@@ -8,6 +8,7 @@ import threading
 import Queue
 import itchat
 
+
 class WechatBot(threading.Thread):
     """WechatBot
     """
