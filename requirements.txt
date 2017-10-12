@@ -1,1 +1,3 @@
 itchat
+pytest
+responses
