@@ -1,62 +1,66 @@
 # coding=utf8
 """
-main script using itchat to communicate with WeChat and send tuling123 response (AI text processing) back
-
-TODO: currently single thread POC, future will replace requests with threading or asyncio (aiohttp)
+WeChat main script
 """
 
-import logging
-import requests
-import itchat
+import Queue
+from BaseHTTPServer import BaseHTTPRequestHandler
+from BaseHTTPServer import HTTPServer
+from src.wechat import WechatBot
+from src.tuling import Tuling
 
+QUEUE_QR = Queue.Queue()
 
-
-def get_response(message, url='http://www.tuling123.com/openapi/api', userid='Gerald', key='ba635c693fd745828b5a49cc7f5d3be5'):
-    """send message to remote sever
-    url = url for remote server
-    key = API key
-    return json {"text": String, "code": integer}
+class myHandler(BaseHTTPRequestHandler):
+    """customer handler for BaseHTTPServer
     """
 
-    data = {'key':key, 'info':message, 'userid':userid}
-    result = requests.post(url, data=data)
-    return result.json()
+    def __init__(self, ip, port, handler):
+        BaseHTTPRequestHandler.__init__(self, ip, port, handler)
 
-@itchat.msg_register(itchat.content.TEXT)
-def chat_reply(message):
-    """itchat (callback) will use it to process messages
-    this function is used for peer to peer chat
-    """
+    def do_GET(self):
+        """handle HTTP GET request
+        """
 
-    try:
-        reply = get_response(message['Text'])
-        if reply['code'] == 1000:
-            return reply
-    except requests.exceptions.RequestException as error:
-        logging.error(error)
-        logging.error(reply)
-    return 'I received: ' + message['Text']
+        if self.path == '/login':
+            try:
+                qr_code = QUEUE_QR.get(timeout=30)
+                self.send_response(200)
+                self.send_header('Content-type', 'image/jpeg')
+                self.end_headers()
+                self.wfile.write(qr_code)
+            except Queue.Empty as _:
+                self.send_response(404)
+                self.send_header('Content-type', 'text/html')
+                self.end_headers()
+                self.wfile.write('where is my QR code?')
+        if self.path == '/logout':
+            #TODO: need to add handler for logout. Need to figure out matching accounts
+            pass
 
-@itchat.msg_register(itchat.content.TEXT, isGroupChat=True)
-def group_chat__reply(message):
-    """itchat (callback) will use it to process messages
-    this function is used for group chat
-    """
-    if not 'isAt' in message:
-        return
-    try:
-        reply = get_response(message['Text'])
-        if reply['code'] == 1000:
-            itchat.send(u'@%s\u2005: %s' % (message['ActualNickName'], reply), message['FromUserName'])
-    except requests.exceptions.RequestException as error:
-        logging.error(error)
-        logging.error(reply)
-
-def main():
+def main(host='', port_number=80):
     """entry point
     """
+    queue_wechat_in = Queue.Queue()
+    queue_wechat_out = Queue.Queue()
 
-    itchat.auto_login(hotReload=True)
-    itchat.run()
+    #FIXME: just try 10 threads. need more for wechat_instances and recycle/restart unused. seems ItChat use this per account
+    wechat_instances = []
+    for instance in range(10):
+        wechat_instances.append(WechatBot(queue_wechat_in, queue_wechat_out, QUEUE_QR))
+        wechat_instances[instance].start()
+
+    #FIXME: the tuling instance can shared by all users
+    tuling_instances = []
+    for instance in range(10):
+        tuling_instances.append(Tuling(queue_wechat_out, queue_wechat_in))
+        tuling_instances[instance].start()
+
+    try:
+        server = HTTPServer((host, port_number), myHandler)
+        server.serve_forever()
+    except Exception as _:
+        server.socket.close()
+
 if __name__ == '__main__':
     main()

@@ -1,0 +1,16 @@
+title AutoWechatReply
+
+auto_reply.py -> wechat.py : Start Wechat Instances
+wechat.py -> WeChat.com: Login
+WeChat.com -> wechat.py: GET QR Code
+wechat.py --> QUEUE_QR: POST QR Code to Queue
+QUEUE_QR --> auto_reply.py: GET QR Code from Queue
+auto_reply.py -> tuling.py: Start Tuling Instnaces
+WeChat.com -> wechat.py: New Incoming Chat Message
+wechat.py --> queue_wechat_out: POST New Message to Queue
+queue_wechat_out --> tuling.py: Get New Message From Queue
+tuling.py -> Tuling123.com: POST Message for AI Process
+Tuling123.com -> tuling.py: AI Processed Message Response
+tuling.py --> queue_wechat_in: POST AI processed response\nto Queue
+queue_wechat_in --> wechat.py: Get AI Processed Message\nfrom Queue
+wechat.py -> "WeChat.com": Post AI Processed\nMessage to WeChat.com
