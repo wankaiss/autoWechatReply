@@ -45,7 +45,8 @@ def main(host='', port_number=80):
     queue_wechat_in = Queue.Queue()
     queue_wechat_out = Queue.Queue()
 
-    # FIXME: just try 10 threads. need more for wechat_instances and recycle/restart unused. seems ItChat use this per account
+    # FIXME: just try 10 threads. need more for wechat_instances and recycle/restart unused.
+    # seems ItChat use this per account
     wechat_instances = []
     for instance in range(10):
         wechat_instances.append(WechatBot(queue_wechat_in, queue_wechat_out, QUEUE_QR))
